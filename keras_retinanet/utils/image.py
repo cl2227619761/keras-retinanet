@@ -25,12 +25,13 @@ from .transform import change_transform_origin
 
 def read_image_bgr(path):
     """ Read an image in BGR format.
+    由于PIL中的图像读入为RGB格式，这里将其转化为BGR格式
 
     Args
         path: Path to the image.
     """
     image = np.asarray(Image.open(path).convert('RGB'))
-    return image[:, :, ::-1].copy()
+    return image[:, :, ::-1].copy()  # image[:, :, ::-1]的作用是将内容翻转，以起到RGB-->BGR的作用，返回的是BGR格式的图片数组信息
 
 
 def preprocess_image(x, mode='caffe'):
