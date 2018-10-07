@@ -36,13 +36,14 @@ def _parse(value, function, fmt):
     with message `fmt.format(e)`, where `e` is the caught `ValueError`.
     """
     try:
-        return function(value)
+        return function(value)  # 就是将输入代入某个函数，得到返回的结果。如果出错，返回提示信息而已
     except ValueError as e:
         raise_from(ValueError(fmt.format(e)), None)
 
 
 def _read_classes(csv_reader):
     """ Parse the classes file given by csv_reader.
+    返回的是一个字典，形式为{'chair': 0, 'car': 1, 'horse': 2}，即{'class_name': class_id}
     """
     result = {}
     for line, row in enumerate(csv_reader):
@@ -62,13 +63,17 @@ def _read_classes(csv_reader):
 
 def _read_annotations(csv_reader, classes):
     """ Read annotations from the csv_reader.
+    input: 
+    1. csv_reader: 是一个读取器，返回的是多行内容
+    2. classes: 是一个字典，是由_read_classes函数得到的
     """
     result = {}
     for line, row in enumerate(csv_reader):
+        # 从读取器中把内容读取出来
         line += 1
 
         try:
-            img_file, x1, y1, x2, y2, class_name = row[:6]
+            img_file, x1, y1, x2, y2, class_name = row[:6]  # 将读取的内容关联到对应的名称
         except ValueError:
             raise_from(ValueError('line {}: format should be \'img_file,x1,y1,x2,y2,class_name\' or \'img_file,,,,,\''.format(line)), None)
 
@@ -79,18 +84,21 @@ def _read_annotations(csv_reader, classes):
         if (x1, y1, x2, y2, class_name) == ('', '', '', '', ''):
             continue
 
+        # 因为上面返回的坐标信息是以str表示的，所以这里需要将其转变为数值形式
         x1 = _parse(x1, int, 'line {}: malformed x1: {{}}'.format(line))
         y1 = _parse(y1, int, 'line {}: malformed y1: {{}}'.format(line))
         x2 = _parse(x2, int, 'line {}: malformed x2: {{}}'.format(line))
         y2 = _parse(y2, int, 'line {}: malformed y2: {{}}'.format(line))
 
         # Check that the bounding box is valid.
+        # 检查bounding-box是否正常符合逻辑
         if x2 <= x1:
             raise ValueError('line {}: x2 ({}) must be higher than x1 ({})'.format(line, x2, x1))
         if y2 <= y1:
             raise ValueError('line {}: y2 ({}) must be higher than y1 ({})'.format(line, y2, y1))
 
         # check if the current class name is correctly present
+        # 判断类别是否在给定的类别字典中
         if class_name not in classes:
             raise ValueError('line {}: unknown class name: \'{}\' (classes: {})'.format(line, class_name, classes))
 
@@ -103,6 +111,7 @@ def _open_for_csv(path):
 
     This is different for python2 it means with mode 'rb',
     for python3 this means 'r' with "universal newlines".
+    针对不同版本的python分别给出了解决办法，目的是打开csv文件
     """
     if sys.version_info[0] < 3:
         return open(path, 'rb')
@@ -136,6 +145,10 @@ class CSVGenerator(Generator):
 
         # Take base_dir from annotations file if not explicitly specified.
         if self.base_dir is None:
+            """
+            如果没有给定标注文件和类别映射文件所在的路径的主路径，可以使用下面的os.path.dirname
+            得到主路径
+            """
             self.base_dir = os.path.dirname(csv_data_file)
 
         # parse the provided class file
@@ -152,6 +165,7 @@ class CSVGenerator(Generator):
         # csv with img_path, x1, y1, x2, y2, class_name
         try:
             with _open_for_csv(csv_data_file) as file:
+                # 打开csv文件，这个文件是图片信息annotation所在的文件
                 self.image_data = _read_annotations(csv.reader(file, delimiter=','), self.classes)
         except ValueError as e:
             raise_from(ValueError('invalid CSV annotations file: {}: {}'.format(csv_data_file, e)), None)
