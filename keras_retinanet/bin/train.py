@@ -208,6 +208,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
 
 def create_generators(args, preprocess_image):
     """ Create generators for training and validation.
+    生成用于训练和验证的数据集生成器train_generator和validation_generator
 
     Args
         args             : parseargs object containing configuration for generators.
@@ -223,6 +224,7 @@ def create_generators(args, preprocess_image):
 
     # create random transform generator for augmenting training data
     if args.random_transform:
+        """是否对图像进行增强操作"""
         transform_generator = random_transform_generator(
             min_rotation=-0.1,
             max_rotation=0.1,
