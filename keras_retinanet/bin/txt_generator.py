@@ -1,3 +1,7 @@
+"""
+将图片划分为训练集和测试集，并将文件名前缀写入对应的txt文件中
+"""
+
 import os
 from sklearn.model_selection import train_test_split
 
