@@ -1,3 +1,6 @@
+"""
+用于自定义数据集的训练时，产生自定义数据集的annotation.csv和mapping.csv文件，用于自定义数据集的训练
+"""
 import os
 import cv2
 import xml.etree.ElementTree as ET
